@@ -15,7 +15,6 @@ import (
 	"github.com/pkg/browser"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"golang.org/x/sys/unix"
 	"log"
 	"net/url"
 	"os"
@@ -404,7 +403,7 @@ func upload(delete bool) {
 		log.Printf("Uploaded: %s", ut)
 		if delete {
 			log.Printf("Deleting %d: %s", i, file)
-			if err := unix.Unlink(file); err != nil {
+			if err := os.Remove(file); err != nil {
 				log.Printf("Error deleting: %s: %s", file, err)
 			}
 		}
