@@ -395,7 +395,7 @@ func upload(delete bool) {
 		progressControl.Value = i
 		progressControl.UpdateValue()
 		log.Print("Uploading", i, "/", len(files), file)
-		ut, err := photosClient.Uploader.UploadFile(uploadCtx, file)
+		ut, err := photosClient.UploadFileToLibrary(uploadCtx, file)
 		if err != nil {
 			log.Printf("Error: %s, %s", file, err)
 			dialog.NewMessage(fmt.Sprintf("%s: %s: %s", "Upload error of", file, err)).WithTitle("Upload error").WithError().Show()
