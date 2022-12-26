@@ -25,7 +25,7 @@ Requires manual install.
 ### Linux
 
 1. Install, if you can use the deb, apk or rpm
-2. Create a `.desktop` file in the correct location: `/.local/share/applications/send-to-google-photos.desktop` With the contents:
+2. Create a `.desktop` file in the correct location: `~/.local/share/kservices5/ServiceMenus/send-to-google-photos.desktop` With the contents:
     ```
     [Desktop Entry]
    Comment[en_AU]=
@@ -59,8 +59,7 @@ Requires manual install.
    Icon=kphotoalbum
 
     ```
-Remember to replace `$$$UPDATE PATH HERE$$$$`
-Or something like that. (Still need to research it.)
+Remember to replace `$$$UPDATE PATH HERE$$$$` with the fully qualified file path
 
 # Issues
 
