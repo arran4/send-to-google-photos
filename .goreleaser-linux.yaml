@@ -3,7 +3,7 @@ builds:
       - linux
     goarch:
       - amd64
-    dir: ./cmd/uitest
+    dir: ./cmd/sendtogp
     flags:
       - -tags=dev
 archives:

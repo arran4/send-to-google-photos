@@ -1,0 +1,61 @@
+# Send-to-google-photos
+
+Send to Google photos, desktop app.
+
+![img.png](img.png)
+
+![img_1.png](img_1.png)
+
+# Getting it to work
+
+2 Parts:
+1. Install
+2. OAuth2 configuration
+
+## Install
+
+I am going to make this easier soon... Maybe. Happy for PRs
+
+### Windows
+
+Requires manual install. 
+1. Put in a folder that is preferably not your Downloads folder.
+2. In Windows put a shortcut to where ever you have put the exe in your "Send to" folder. https://www.pcmag.com/how-to/how-to-customize-the-send-to-menu-in-windows
+
+### Linux
+
+1. Install, if you can use the deb, apk or rpm
+2. Create a `.desktop` file in the correct location: `/.local/share/applications/send-to-google-photos.desktop` With the contents:
+    ```
+    [Desktop Entry]
+    Comment[en_AU]=
+    Comment=
+    Exec=$$$UPDATE PATH HERE$$$$/sendtogp
+    GenericName[en_AU]=
+    GenericName=
+    Icon=kphotoalbum
+    MimeType=image/png;image/jpeg;image/gif;
+    Name[en_AU]=Send To Google Photos
+    Name=Send To Google Photos
+    NoDisplay=false
+    Path=
+    StartupNotify=true
+    Terminal=false
+    TerminalOptions=
+    Type=Application
+    X-DBUS-ServiceName=
+    X-DBUS-StartupType=none
+    X-KDE-SubstituteUID=false
+    X-KDE-Username=
+    
+    [Desktop Action send-to-google-photos]
+    Name=Send to google photos
+    Exec=launch.sh %d $$$UPDATE PATH HERE$$$$/sendtogp \"%f\"
+    Icon=kphotoalbum
+    ```
+Remember to replace `$$$UPDATE PATH HERE$$$$`
+Or something like that. (Still need to research it.)
+
+# Issues
+
+There are a couple. Mostly should relate to: https://bitbucket.org/rj/goey/src/master/ or the way you install it.
