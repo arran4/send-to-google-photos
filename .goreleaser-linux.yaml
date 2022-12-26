@@ -23,6 +23,20 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+nfpms:
+  -
+    vendor: Ubels Software Development
+    homepage: https://github.com/arran4/
+    maintainer: Arran Ubels <arran@ubels.com.au>
+    description: NA
+    license: Private
+    formats:
+      - apk
+      - deb
+      - rpm
+    release: 1
+    section: default
+    priority: extra
 
 # modelines, feel free to remove those if you don't want/use them:
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
