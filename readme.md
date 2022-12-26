@@ -24,8 +24,12 @@ Requires manual install.
 
 ### Linux
 
-1. Install, if you can use the deb, apk or rpm
-2. Create a `.desktop` file in the correct location: `~/.local/share/kservices5/ServiceMenus/send-to-google-photos.desktop` With the contents:
+1. Install, if you can use the deb, apk or rpm. 
+
+Or
+
+1. Install the binary yourself somewhere on your system.
+2. Create a `.desktop` file in the correct location: `~/.local/share/kservices5/ServiceMenus/send-to-google-photos.desktop` (or `/usr/share/kservices5/ServiceMenus`) With the contents:
     ```
     [Desktop Entry]
    Comment[en_AU]=

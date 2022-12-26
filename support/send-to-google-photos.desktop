@@ -1,0 +1,30 @@
+[Desktop Entry]
+Comment[en_AU]=
+Comment=
+Exec=/usr/bin/sendtogp
+GenericName[en_AU]=
+GenericName=
+Icon=kphotoalbum
+Name[en_AU]=Send To Google Photos
+Name=Send To Google Photos
+NoDisplay=false
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-DBUS-ServiceName=
+X-DBUS-StartupType=none
+X-KDE-SubstituteUID=false
+X-KDE-Username=
+X-DFM-MenuTypes=MultiFile;MultiFileDirs;
+Actions=sendToGP;
+ServiceTypes=KonqPopupMenu/Plugin
+Type=Service
+MimeType=image/jpeg;image/png;image/svg+xml;image/svg+xml-compressed;image/bmp;image/webp;image/tiff;
+X-KDE-Priority=TopLevel
+
+[Desktop Action sendToGP]
+Name=Send to google photos
+Exec=/usr/bin/sendtogp %F
+Icon=kphotoalbum

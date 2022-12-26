@@ -37,6 +37,9 @@ nfpms:
     release: 1
     section: default
     priority: extra
+    contents:
+      - src: ./support/send-to-google-photos.desktop
+        dst: /usr/share/kservices5/ServiceMenus/send-to-google-photos.desktop
 
 # modelines, feel free to remove those if you don't want/use them:
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
