@@ -55,7 +55,7 @@ Requires manual install.
    
    [Desktop Action sendToGP]
    Name=Send to google photos
-   Exec=$$$UPDATE PATH HERE$$$$ "%F"
+   Exec=$$$UPDATE PATH HERE$$$$ %F
    Icon=kphotoalbum
 
     ```
