@@ -42,6 +42,10 @@ var (
 	}
 )
 
+func init() {
+	log.SetFlags(log.Flags() | log.Lshortfile)
+}
+
 func main() {
 	err := loop.Run(createWindow)
 	if err != nil {
@@ -158,7 +162,7 @@ func getOauth2TokenPart2(urlStr string) {
 		return
 	}
 
-	if _, err := google.JWTConfigFromJSON(jb); err != nil {
+	if _, err := tokenFromJsonBytes(jb); err != nil {
 		log.Printf("Error: %s %s", string(jb), err)
 		dialog.NewMessage(fmt.Sprintf("%s: %s", "Oauth2 json file error", err)).WithTitle("Oauth2 json file error").WithError().Show()
 		return
@@ -169,6 +173,16 @@ func getOauth2TokenPart2(urlStr string) {
 		dialog.NewMessage(fmt.Sprintf("%s: %s", "Upload error", err)).WithTitle("Upload error").WithError().Show()
 		return
 	}
+
+	dialog.NewMessage("Accepted").WithTitle("Accepted").WithError().Show()
+}
+
+func tokenFromJsonBytes(jb []byte) (oauth2.TokenSource, error) {
+	var ts oauth2.Token
+	if err := json.Unmarshal(jb, &ts); err != nil {
+		return nil, err
+	}
+	return oauth2.StaticTokenSource(&ts), nil
 }
 
 func getOauth2TokenPart1() {
