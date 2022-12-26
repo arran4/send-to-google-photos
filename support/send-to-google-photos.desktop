@@ -1,7 +1,7 @@
 [Desktop Entry]
 Comment[en_AU]=
 Comment=
-Exec=/usr/bin/sendtogp
+Exec=/usr/bin/send-to-google-photos
 GenericName[en_AU]=
 GenericName=
 Icon=kphotoalbum
@@ -26,5 +26,5 @@ X-KDE-Priority=TopLevel
 
 [Desktop Action sendToGP]
 Name=Send to google photos
-Exec=/usr/bin/sendtogp %F
+Exec=/usr/bin/send-to-google-photos %F
 Icon=kphotoalbum
