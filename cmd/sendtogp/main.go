@@ -3,6 +3,7 @@ package main
 import (
 	"bitbucket.org/rj/goey"
 	"bitbucket.org/rj/goey/base"
+	"bitbucket.org/rj/goey/dialog"
 	"bitbucket.org/rj/goey/loop"
 	"bitbucket.org/rj/goey/windows"
 	"context"
@@ -11,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/gphotosuploader/google-photos-api-client-go/v2"
 	"github.com/pkg/browser"
-	"github.com/sqweek/dialog"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/sys/unix"
@@ -121,25 +121,25 @@ func getOauth2TokenPart1() {
 	oauth2ConfigJsonFile, err := ring.Get(oauth2JsonFileKey)
 	if err != nil {
 		log.Printf("Error: %s", err)
-		dialog.Message("%s: %s", "Key chain error", err).Title("Key chain error").Error()
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Key chain error", err)).WithTitle("Key chain error").WithError().Show()
 		return
 	}
 
 	c, err := google.ConfigFromJSON(oauth2ConfigJsonFile.Data)
 	if err != nil {
 		log.Printf("Error: %s", err)
-		dialog.Message("%s: %s", "Oauth2 json file error", err).Title("Oauth2 json file error").Error()
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Oauth2 json file error", err)).WithTitle("Oauth2 json file error").WithError().Show()
 		return
 	}
 	authUrl := c.AuthCodeURL(stateUUID)
 
 	if err := browser.OpenURL(authUrl); err != nil {
 		log.Printf("Error: %s", err)
-		dialog.Message("%s: %s", "Browser open error", err).Title("Browser open error").Error()
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Browser open error", err)).WithTitle("Browser open error").WithError().Show()
 		return
 	}
 
-	dialog.Message("%s", "Please authorize then copy paste the URL back here in the 'OAuth2 Token Exchange URL' field").Title("Oauth2 process").Info()
+	dialog.NewMessage(fmt.Sprintf("%s", "Please authorize then copy paste the URL back here in the 'OAuth2 Token Exchange URL' field")).WithTitle("Oauth2 process").WithInfo().Show()
 
 }
 
@@ -150,7 +150,7 @@ func setupOauthCreds(oauth2Json string) {
 
 	if err := AddSecret(ring, oauth2JsonFileKey, "OAuth2 JSON file", "OAuth2 JSON file", []byte(oauth2Json)); err != nil {
 		log.Printf("Error: %s", err)
-		dialog.Message("%s: %s", "Upload error", err).Title("Upload error").Error()
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Upload error", err)).WithTitle("Upload error").WithError().Show()
 		return
 	}
 }
@@ -183,13 +183,15 @@ func testCreds() {
 
 	secretOauthToken, err := ring.Get(oauthTokenJsonFileKey)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Keyring error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Keyring error", err)).WithTitle("Keyring error").WithError().Show()
+		return
 	}
 
 	ts, err := google.JWTConfigFromJSON(secretOauthToken.Data)
 	if err != nil {
 		log.Printf("JWT Token error: %s", err)
-		dialog.Message("%s: %s", "JWT Token error", err).Title("Upload error").Error()
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "JWT Token error", err)).WithTitle("JWT Token error").WithError().Show()
 		return
 	}
 
@@ -197,12 +199,14 @@ func testCreds() {
 
 	photosClient, err := gphotos.NewClient(c)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Photo client error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Photo client error", err)).WithTitle("Photo client error").WithError().Show()
+		return
 	}
 	albums, err := photosClient.Albums.List(ctx)
 	if err != nil {
 		log.Printf("List error: %s", err)
-		dialog.Message("%s: %s", "list error", err).Title("List error").Error()
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "list error", err)).WithTitle("List error").WithError().Show()
 		return
 	}
 
@@ -240,7 +244,7 @@ func renderUploadTab() goey.TabItem {
 func upload(delete bool) {
 	if uploadContext != nil {
 		log.Print("Upload already in progress")
-		dialog.Message("%s", "Upload already in progress").Title("Upload already in progress").Error()
+		dialog.NewMessage(fmt.Sprintf("%s", "Upload already in progress")).WithTitle("Upload already in progress").WithError().Show()
 		return
 	}
 	var cf func()
@@ -259,13 +263,15 @@ func upload(delete bool) {
 
 	secretOauthToken, err := ring.Get(oauthTokenJsonFileKey)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Keyring error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Keyring error", err)).WithTitle("Keyring error").WithError().Show()
+		return
 	}
 
 	ts, err := google.JWTConfigFromJSON(secretOauthToken.Data)
 	if err != nil {
 		log.Printf("JWT Token error: %s", err)
-		dialog.Message("%s: %s", "JWT Token error", err).Title("Upload error").Error()
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "JWT Token error", err)).WithTitle("Upload error").WithError().Show()
 		return
 	}
 
@@ -273,7 +279,9 @@ func upload(delete bool) {
 
 	photosClient, err := gphotos.NewClient(c)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Photo client error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Photo client error", err)).WithTitle("Photo client error").WithError().Show()
+		return
 	}
 
 	files := strings.Split(filesStr, "\n")
@@ -282,7 +290,7 @@ func upload(delete bool) {
 		_, err = photosClient.Uploader.UploadFile(uploadContext, file)
 		if err != nil {
 			log.Printf("Error: %s, %s", file, err)
-			dialog.Message("%s: %s: %s", "Upload error of", file, err).Title("Upload error").Error()
+			dialog.NewMessage(fmt.Sprintf("%s: %s: %s", "Upload error of", file, err)).WithTitle("Upload error").WithError().Show()
 			break
 		}
 		if delete {
