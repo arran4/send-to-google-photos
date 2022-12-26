@@ -28,30 +28,36 @@ Requires manual install.
 2. Create a `.desktop` file in the correct location: `/.local/share/applications/send-to-google-photos.desktop` With the contents:
     ```
     [Desktop Entry]
-    Comment[en_AU]=
-    Comment=
-    Exec=$$$UPDATE PATH HERE$$$$/sendtogp
-    GenericName[en_AU]=
-    GenericName=
-    Icon=kphotoalbum
-    MimeType=image/png;image/jpeg;image/gif;
-    Name[en_AU]=Send To Google Photos
-    Name=Send To Google Photos
-    NoDisplay=false
-    Path=
-    StartupNotify=true
-    Terminal=false
-    TerminalOptions=
-    Type=Application
-    X-DBUS-ServiceName=
-    X-DBUS-StartupType=none
-    X-KDE-SubstituteUID=false
-    X-KDE-Username=
-    
-    [Desktop Action send-to-google-photos]
-    Name=Send to google photos
-    Exec=launch.sh %d $$$UPDATE PATH HERE$$$$/sendtogp \"%f\"
-    Icon=kphotoalbum
+   Comment[en_AU]=
+   Comment=
+   Exec=$$$UPDATE PATH HERE$$$$
+   GenericName[en_AU]=
+   GenericName=
+   Icon=kphotoalbum
+   Name[en_AU]=Send To Google Photos
+   Name=Send To Google Photos
+   NoDisplay=false
+   Path=
+   StartupNotify=true
+   Terminal=false
+   TerminalOptions=
+   Type=Application
+   X-DBUS-ServiceName=
+   X-DBUS-StartupType=none
+   X-KDE-SubstituteUID=false
+   X-KDE-Username=
+   X-DFM-MenuTypes=MultiFile;MultiFileDirs;
+   Actions=sendToGP;
+   ServiceTypes=KonqPopupMenu/Plugin
+   Type=Service
+   MimeType=image/jpeg;image/png;image/svg+xml;image/svg+xml-compressed;image/bmp;image/webp;image/tiff;
+   X-KDE-Priority=TopLevel
+   
+   [Desktop Action sendToGP]
+   Name=Send to google photos
+   Exec=$$$UPDATE PATH HERE$$$$ "%f"
+   Icon=kphotoalbum
+
     ```
 Remember to replace `$$$UPDATE PATH HERE$$$$`
 Or something like that. (Still need to research it.)
