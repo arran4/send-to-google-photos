@@ -42,7 +42,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   goreleaser-windows:
-    runs-on: windows
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
