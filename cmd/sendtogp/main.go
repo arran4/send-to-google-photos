@@ -68,7 +68,7 @@ func renderWindow() base.Widget {
 	tabs := &goey.Tabs{
 		Insets: goey.DefaultInsets(),
 		Children: []goey.TabItem{
-			//renderUploadTab(),
+			renderUploadTab(),
 			renderConfigTab(),
 		},
 	}
@@ -94,7 +94,7 @@ func renderConfigTab() goey.TabItem {
 					},
 				},
 				&goey.Label{Text: "OAuth2 Token Exchange URL:"},
-				&goey.TextArea{
+				&goey.TextInput{
 					Value:       "",
 					Placeholder: "Hidden",
 					OnChange: func(v string) {
@@ -324,7 +324,7 @@ func renderUploadTab() goey.TabItem {
 				&goey.Expand{Child: &goey.TextArea{
 					Value:       filesStr,
 					Placeholder: "Files, one per line, full path.",
-					OnChange:    func(v string) { println("Files ", v); filesStr = v },
+					OnChange:    func(v string) { filesStr = v },
 					ReadOnly:    false,
 				}},
 				&goey.HBox{Children: []base.Widget{
@@ -385,14 +385,23 @@ func upload(delete bool) {
 	}
 
 	files := strings.Split(filesStr, "\n")
+	progressControl.Max = len(files)
+	progressControl.Value = 0
 	for i, file := range files {
-		log.Print("Upload", i, "/", len(files), file)
-		_, err = photosClient.Uploader.UploadFile(uploadCtx, file)
+		if len(file) == 0 {
+			log.Printf("Skipping empty file")
+			continue
+		}
+		progressControl.Value = i
+		progressControl.UpdateValue()
+		log.Print("Uploading", i, "/", len(files), file)
+		ut, err := photosClient.Uploader.UploadFile(uploadCtx, file)
 		if err != nil {
 			log.Printf("Error: %s, %s", file, err)
 			dialog.NewMessage(fmt.Sprintf("%s: %s: %s", "Upload error of", file, err)).WithTitle("Upload error").WithError().Show()
 			break
 		}
+		log.Printf("Uploaded: %s", ut)
 		if delete {
 			log.Printf("Deleting %d: %s", i, file)
 			if err := unix.Unlink(file); err != nil {
@@ -400,4 +409,5 @@ func upload(delete bool) {
 			}
 		}
 	}
+	dialog.NewMessage("Done").WithTitle("Upload Done").WithError().Show()
 }
