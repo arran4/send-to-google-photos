@@ -3,9 +3,9 @@ module send-to-google-photos
 go 1.19
 
 require (
-	bitbucket.org/rj/goey v0.9.0 // indirect
-	github.com/lxn/win v0.0.0-20191128105842-2da648fda5b4 // indirect
-	gitlab.com/stone.code/assert v0.0.0-20191212205015-97cac9777adf // indirect
-	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
-	golang.org/x/sys v0.0.0-20190904154756-749cb33beabd // indirect
+	bitbucket.org/rj/goey v0.9.1-0.20220128211443-c35bd7e91150 // indirect
+	github.com/lxn/win v0.0.0-20210218163916-a377121e959e // indirect
+	gitlab.com/stone.code/assert v1.1.4 // indirect
+	golang.org/x/image v0.2.0 // indirect
+	golang.org/x/sys v0.3.0 // indirect
 )
