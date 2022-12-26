@@ -7,6 +7,7 @@ import (
 	"bitbucket.org/rj/goey/loop"
 	"bitbucket.org/rj/goey/windows"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/99designs/keyring"
 	"github.com/google/uuid"
@@ -16,6 +17,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"golang.org/x/sys/unix"
 	"log"
+	"net/url"
 	"os"
 	"strings"
 )
@@ -35,6 +37,9 @@ var (
 	filesStr      = strings.Join(os.Args[1:], "\n")
 	uploadContext context.Context
 	stateUUID     = uuid.New().String()
+	scopes        = []string{
+		"https://www.googleapis.com/auth/photoslibrary.appendonly",
+	}
 )
 
 func main() {
@@ -58,7 +63,7 @@ func renderWindow() base.Widget {
 	tabs := &goey.Tabs{
 		Insets: goey.DefaultInsets(),
 		Children: []goey.TabItem{
-			renderUploadTab(),
+			//renderUploadTab(),
 			renderConfigTab(),
 		},
 	}
@@ -70,6 +75,7 @@ func renderWindow() base.Widget {
 
 func renderConfigTab() goey.TabItem {
 	var oauth2Json string
+	var urlStr string
 	return goey.TabItem{
 		Caption: "Configuration / Authentication",
 		Child: &goey.VBox{
@@ -87,7 +93,7 @@ func renderConfigTab() goey.TabItem {
 					Value:       "",
 					Placeholder: "Hidden",
 					OnChange: func(v string) {
-						oauth2Json = v
+						urlStr = v
 					},
 				},
 				&goey.HBox{Children: []base.Widget{
@@ -98,7 +104,7 @@ func renderConfigTab() goey.TabItem {
 						getOauth2TokenPart1()
 					}},
 					&goey.Button{Text: "OAuth2 Authentication Part 2", Default: true, OnClick: func() {
-						getOauth2TokenPart2()
+						getOauth2TokenPart2(urlStr)
 					}},
 					&goey.Button{Text: "Test", Default: true, OnClick: func() {
 						testCreds()
@@ -109,8 +115,60 @@ func renderConfigTab() goey.TabItem {
 	}
 }
 
-func getOauth2TokenPart2() {
+func getOauth2TokenPart2(urlStr string) {
 
+	ring, _ := keyring.Open(keyring.Config{
+		ServiceName: service,
+	})
+
+	oauth2ConfigJsonFile, err := ring.Get(oauth2JsonFileKey)
+	if err != nil {
+		log.Printf("Error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Key chain error", err)).WithTitle("Key chain error").WithError().Show()
+		return
+	}
+
+	c, err := google.ConfigFromJSON(oauth2ConfigJsonFile.Data)
+	if err != nil {
+		log.Printf("Error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Oauth2 json file error", err)).WithTitle("Oauth2 json file error").WithError().Show()
+		return
+	}
+
+	ctx := context.Background()
+
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		log.Printf("Error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "ouath2 url error", err)).WithTitle("Oauth2 url error").WithError().Show()
+		return
+	}
+
+	t, err := c.Exchange(ctx, u.Query().Get("code"))
+	if err != nil {
+		log.Printf("Error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "ouath2 url error", err)).WithTitle("Oauth2 url error").WithError().Show()
+		return
+	}
+
+	jb, err := json.Marshal(t)
+	if err != nil {
+		log.Printf("Error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "ouath2 token marshal error", err)).WithTitle("Oauth2 token marshal error").WithError().Show()
+		return
+	}
+
+	if _, err := google.JWTConfigFromJSON(jb); err != nil {
+		log.Printf("Error: %s %s", string(jb), err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Oauth2 json file error", err)).WithTitle("Oauth2 json file error").WithError().Show()
+		return
+	}
+
+	if err := AddSecret(ring, oauth2JsonFileKey, "OAuth2 JSON file", "OAuth2 JSON file", jb); err != nil {
+		log.Printf("Error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Upload error", err)).WithTitle("Upload error").WithError().Show()
+		return
+	}
 }
 
 func getOauth2TokenPart1() {
@@ -131,6 +189,10 @@ func getOauth2TokenPart1() {
 		dialog.NewMessage(fmt.Sprintf("%s: %s", "Oauth2 json file error", err)).WithTitle("Oauth2 json file error").WithError().Show()
 		return
 	}
+
+	c.Scopes = scopes
+	//TODO c.RedirectURL = "https://arran4.github.io/send-to-google-photos/"
+
 	authUrl := c.AuthCodeURL(stateUUID)
 
 	if err := browser.OpenURL(authUrl); err != nil {
@@ -144,11 +206,32 @@ func getOauth2TokenPart1() {
 }
 
 func setupOauthCreds(oauth2Json string) {
+	var b []byte = []byte(oauth2Json)
+	if len(oauth2Json) == 0 {
+		f, err := dialog.NewOpenFile().WithTitle("Oauth2 Json file").AddFilter("Json file", "*.json").Show()
+		if err != nil {
+			return
+		}
+		b, err = os.ReadFile(f)
+		if err != nil {
+			log.Printf("Opening file %s Error: %s", f, err)
+			dialog.NewMessage(fmt.Sprintf("%s: %s", "File open error", err)).WithTitle("File open error").WithError().Show()
+			return
+		}
+	}
+
+	_, err := google.ConfigFromJSON(b)
+	if err != nil {
+		log.Printf("Error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Oauth2 json file error", err)).WithTitle("Oauth2 json file error").WithError().Show()
+		return
+	}
+
 	ring, _ := keyring.Open(keyring.Config{
 		ServiceName: service,
 	})
 
-	if err := AddSecret(ring, oauth2JsonFileKey, "OAuth2 JSON file", "OAuth2 JSON file", []byte(oauth2Json)); err != nil {
+	if err := AddSecret(ring, oauth2JsonFileKey, "OAuth2 JSON file", "OAuth2 JSON file", b); err != nil {
 		log.Printf("Error: %s", err)
 		dialog.NewMessage(fmt.Sprintf("%s: %s", "Upload error", err)).WithTitle("Upload error").WithError().Show()
 		return
