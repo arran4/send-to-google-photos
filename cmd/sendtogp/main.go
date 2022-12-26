@@ -23,9 +23,9 @@ import (
 )
 
 const (
-	service               = "send-to-google-photos"
-	oauthTokenJsonFileKey = "oauth-token"
-	oauth2JsonFileKey     = "GoogleOauth2JsonFile"
+	service                  = "send-to-google-photos"
+	oauth2TokenJsonFileKey   = "oauth-token"
+	oauth2ServiceJsonFileKey = "GoogleOauth2JsonFile"
 )
 
 var (
@@ -34,11 +34,12 @@ var (
 		Min:   0,
 		Max:   0,
 	}
-	filesStr      = strings.Join(os.Args[1:], "\n")
-	uploadContext context.Context
-	stateUUID     = uuid.New().String()
-	scopes        = []string{
+	filesStr  = strings.Join(os.Args[1:], "\n")
+	uploadCtx context.Context
+	stateUUID = uuid.New().String()
+	scopes    = []string{
 		"https://www.googleapis.com/auth/photoslibrary.appendonly",
+		"https://www.googleapis.com/auth/photoslibrary.readonly",
 	}
 )
 
@@ -125,7 +126,7 @@ func getOauth2TokenPart2(urlStr string) {
 		ServiceName: service,
 	})
 
-	oauth2ConfigJsonFile, err := ring.Get(oauth2JsonFileKey)
+	oauth2ConfigJsonFile, err := ring.Get(oauth2ServiceJsonFileKey)
 	if err != nil {
 		log.Printf("Error: %s", err)
 		dialog.NewMessage(fmt.Sprintf("%s: %s", "Key chain error", err)).WithTitle("Key chain error").WithError().Show()
@@ -168,7 +169,7 @@ func getOauth2TokenPart2(urlStr string) {
 		return
 	}
 
-	if err := AddSecret(ring, oauth2JsonFileKey, "OAuth2 JSON file", "OAuth2 JSON file", jb); err != nil {
+	if err := AddSecret(ring, oauth2TokenJsonFileKey, "OAuth2 JSON file", "OAuth2 JSON file", jb); err != nil {
 		log.Printf("Error: %s", err)
 		dialog.NewMessage(fmt.Sprintf("%s: %s", "Upload error", err)).WithTitle("Upload error").WithError().Show()
 		return
@@ -190,7 +191,7 @@ func getOauth2TokenPart1() {
 		ServiceName: service,
 	})
 
-	oauth2ConfigJsonFile, err := ring.Get(oauth2JsonFileKey)
+	oauth2ConfigJsonFile, err := ring.Get(oauth2ServiceJsonFileKey)
 	if err != nil {
 		log.Printf("Error: %s", err)
 		dialog.NewMessage(fmt.Sprintf("%s: %s", "Key chain error", err)).WithTitle("Key chain error").WithError().Show()
@@ -245,7 +246,7 @@ func setupOauthCreds(oauth2Json string) {
 		ServiceName: service,
 	})
 
-	if err := AddSecret(ring, oauth2JsonFileKey, "OAuth2 JSON file", "OAuth2 JSON file", b); err != nil {
+	if err := AddSecret(ring, oauth2ServiceJsonFileKey, "OAuth2 JSON file", "OAuth2 JSON file", b); err != nil {
 		log.Printf("Error: %s", err)
 		dialog.NewMessage(fmt.Sprintf("%s: %s", "Upload error", err)).WithTitle("Upload error").WithError().Show()
 		return
@@ -278,21 +279,21 @@ func testCreds() {
 		ServiceName: service,
 	})
 
-	secretOauthToken, err := ring.Get(oauthTokenJsonFileKey)
+	secretOauthToken, err := ring.Get(oauth2TokenJsonFileKey)
 	if err != nil {
 		log.Printf("Keyring error: %s", err)
 		dialog.NewMessage(fmt.Sprintf("%s: %s", "Keyring error", err)).WithTitle("Keyring error").WithError().Show()
 		return
 	}
 
-	ts, err := google.JWTConfigFromJSON(secretOauthToken.Data)
+	ts, err := tokenFromJsonBytes(secretOauthToken.Data)
 	if err != nil {
-		log.Printf("JWT Token error: %s", err)
-		dialog.NewMessage(fmt.Sprintf("%s: %s", "JWT Token error", err)).WithTitle("JWT Token error").WithError().Show()
+		log.Printf("Error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Oauth2 json file error", err)).WithTitle("Oauth2 json file error").WithError().Show()
 		return
 	}
 
-	c := oauth2.NewClient(ctx, ts.TokenSource(ctx))
+	c := oauth2.NewClient(ctx, ts)
 
 	photosClient, err := gphotos.NewClient(c)
 	if err != nil {
@@ -310,6 +311,8 @@ func testCreds() {
 	for _, album := range albums {
 		log.Printf("%s", album.Title)
 	}
+
+	dialog.NewMessage("Works").WithTitle("Works").WithError().Show()
 }
 
 func renderUploadTab() goey.TabItem {
@@ -339,40 +342,40 @@ func renderUploadTab() goey.TabItem {
 }
 
 func upload(delete bool) {
-	if uploadContext != nil {
+	if uploadCtx != nil {
 		log.Print("Upload already in progress")
 		dialog.NewMessage(fmt.Sprintf("%s", "Upload already in progress")).WithTitle("Upload already in progress").WithError().Show()
 		return
 	}
 	var cf func()
-	uploadContext, cf = context.WithCancel(context.Background())
+	uploadCtx, cf = context.WithCancel(context.Background())
 	defer func() {
 		if cf != nil {
 			cf()
 			cf = nil
 		}
-		uploadContext = nil
+		uploadCtx = nil
 	}()
 
 	ring, _ := keyring.Open(keyring.Config{
 		ServiceName: service,
 	})
 
-	secretOauthToken, err := ring.Get(oauthTokenJsonFileKey)
+	secretOauthToken, err := ring.Get(oauth2TokenJsonFileKey)
 	if err != nil {
 		log.Printf("Keyring error: %s", err)
 		dialog.NewMessage(fmt.Sprintf("%s: %s", "Keyring error", err)).WithTitle("Keyring error").WithError().Show()
 		return
 	}
 
-	ts, err := google.JWTConfigFromJSON(secretOauthToken.Data)
+	ts, err := tokenFromJsonBytes(secretOauthToken.Data)
 	if err != nil {
-		log.Printf("JWT Token error: %s", err)
-		dialog.NewMessage(fmt.Sprintf("%s: %s", "JWT Token error", err)).WithTitle("Upload error").WithError().Show()
+		log.Printf("Error: %s", err)
+		dialog.NewMessage(fmt.Sprintf("%s: %s", "Oauth2 json file error", err)).WithTitle("Oauth2 json file error").WithError().Show()
 		return
 	}
 
-	c := oauth2.NewClient(uploadContext, ts.TokenSource(uploadContext))
+	c := oauth2.NewClient(uploadCtx, ts)
 
 	photosClient, err := gphotos.NewClient(c)
 	if err != nil {
@@ -384,7 +387,7 @@ func upload(delete bool) {
 	files := strings.Split(filesStr, "\n")
 	for i, file := range files {
 		log.Print("Upload", i, "/", len(files), file)
-		_, err = photosClient.Uploader.UploadFile(uploadContext, file)
+		_, err = photosClient.Uploader.UploadFile(uploadCtx, file)
 		if err != nil {
 			log.Printf("Error: %s, %s", file, err)
 			dialog.NewMessage(fmt.Sprintf("%s: %s: %s", "Upload error of", file, err)).WithTitle("Upload error").WithError().Show()
