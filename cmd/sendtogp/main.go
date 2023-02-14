@@ -40,6 +40,7 @@ var (
 		"https://www.googleapis.com/auth/photoslibrary.appendonly",
 		"https://www.googleapis.com/auth/photoslibrary.readonly",
 	}
+	window *windows.Window
 )
 
 func init() {
@@ -59,7 +60,12 @@ func createWindow() error {
 		return err
 	}
 	w.SetScroll(false, true)
+	window = w
 	return nil
+}
+
+func updateWindow() {
+	window.SetChild(renderWindow())
 }
 
 func renderWindow() base.Widget {
@@ -69,6 +75,9 @@ func renderWindow() base.Widget {
 		Children: []goey.TabItem{
 			renderUploadTab(),
 			renderConfigTab(),
+		},
+		OnChange: func(i int) {
+			updateWindow()
 		},
 	}
 	return &goey.Padding{
