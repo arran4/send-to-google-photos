@@ -29,9 +29,9 @@ require (
 	github.com/vmihailenco/msgpack v4.0.1+incompatible // indirect
 	gitlab.com/stone.code/assert v1.1.4 // indirect
 	golang.org/x/image v0.10.0 // indirect
-	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	golang.org/x/term v0.13.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
+	golang.org/x/term v0.18.0 // indirect
 	google.golang.org/api v0.19.0 // indirect
 	google.golang.org/appengine v1.5.0 // indirect
 )
