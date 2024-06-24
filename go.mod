@@ -21,8 +21,8 @@ require (
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/gphotosuploader/googlemirror v0.5.0 // indirect
 	github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c // indirect
-	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
-	github.com/hashicorp/go-retryablehttp v0.6.8 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/lxn/win v0.0.0-20210218163916-a377121e959e // indirect
 	github.com/mediocregopher/radix/v3 v3.2.0 // indirect
 	github.com/mtibben/percent v0.2.1 // indirect
@@ -30,7 +30,7 @@ require (
 	gitlab.com/stone.code/assert v1.1.4 // indirect
 	golang.org/x/image v0.10.0 // indirect
 	golang.org/x/net v0.23.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
 	google.golang.org/api v0.19.0 // indirect
 	google.golang.org/appengine v1.5.0 // indirect
