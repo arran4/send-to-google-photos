@@ -28,7 +28,7 @@ require (
 	github.com/mtibben/percent v0.2.1 // indirect
 	github.com/vmihailenco/msgpack v4.0.1+incompatible // indirect
 	gitlab.com/stone.code/assert v1.1.4 // indirect
-	golang.org/x/image v0.10.0 // indirect
+	golang.org/x/image v0.18.0 // indirect
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
